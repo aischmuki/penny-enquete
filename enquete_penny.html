@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluatie Penny – AI Kennisbank Herstel Toeslagen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f2;
+      --card: #ffffff;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --light: #a8a29e;
+      --accent: #0f6b5c;
+      --accent-2: #e0f2ed;
+      --border: #e5e0da;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0 16px 100px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0a4a3d 0%, #0f6b5c 60%, #1a8c75 100%);
+      color: #fff;
+      padding: 52px 32px 48px;
+      margin: 0 -16px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-inner { max-width: 640px; margin: 0 auto; position: relative; }
+    .anon-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      color: #fff; font-size: 12px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      line-height: 1.2; font-weight: 700; margin-bottom: 12px;
+    }
+    .hero h1 em { font-style: italic; opacity: .85; }
+    .hero p { font-size: 15px; opacity: .8; line-height: 1.65; max-width: 500px; }
+    .optional-note {
+      margin-top: 16px;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+      font-size: 12px; padding: 6px 14px; border-radius: 999px; opacity: .9;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; }
+
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; margin-top: 44px;
+    }
+    .section-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-title { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+
+    .q-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 28px; margin-bottom: 14px;
+      opacity: 0; transform: translateY(10px); animation: fadeUp .4s forwards;
+      transition: border-color .2s;
+    }
+    .q-card.answered { border-color: #86c9be; }
+    @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+    .q-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .opt-tag {
+      font-size: 10px; font-weight: 500; letter-spacing: .04em;
+      color: var(--light); text-transform: none; background: var(--bg);
+      padding: 2px 7px; border-radius: 999px; border: 1px solid var(--border);
+    }
+    .q-text { font-size: 16px; font-weight: 500; line-height: 1.55; color: var(--ink); margin-bottom: 22px; }
+
+    /* Scale */
+    .scale-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+    .scale-btn {
+      flex: 1; min-width: 34px; aspect-ratio: 1;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      background: transparent; color: var(--ink);
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scale-btn:hover { border-color: var(--accent); background: var(--accent-2); color: var(--accent); }
+    .scale-btn.selected {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+      transform: scale(1.1); box-shadow: 0 4px 14px rgba(15,107,92,.3);
+    }
+    .scale-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 11px; color: var(--light); }
+
+    /* Multiple choice */
+    .mc-list { display: flex; flex-direction: column; gap: 9px; }
+    .mc-option {
+      display: flex; align-items: flex-start; gap: 12px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 13px 16px; cursor: pointer;
+      transition: all .15s; background: transparent;
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      color: var(--ink); text-align: left; line-height: 1.45;
+      width: 100%;
+    }
+    .mc-option:hover { border-color: var(--accent); background: var(--accent-2); }
+    .mc-option.selected { border-color: var(--accent); background: var(--accent-2); font-weight: 500; color: var(--accent); }
+    .mc-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center; transition: all .15s;
+    }
+    .mc-option.selected .mc-dot { border-color: var(--accent); background: var(--accent); }
+    .mc-option.selected .mc-dot::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+
+    /* Ja/Nee */
+    .yn-row { display: flex; gap: 9px; flex-wrap: wrap; }
+    .yn-btn {
+      flex: 1; min-width: 90px; padding: 13px 10px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      background: transparent; font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all .15s; color: var(--ink); text-align: center;
+    }
+    .yn-btn:hover { border-color: var(--accent); background: var(--accent-2); color: var(--accent); }
+    .yn-btn.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+    /* Open */
+    .open-area {
+      width: 100%; min-height: 110px; border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 14px 16px; resize: vertical;
+      font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6;
+      color: var(--ink); background: transparent; outline: none; transition: border-color .2s;
+    }
+    .open-area:focus { border-color: var(--accent); }
+    .open-area::placeholder { color: var(--light); }
+    .char-count { text-align: right; font-size: 11px; color: var(--light); margin-top: 6px; }
+
+    /* Submit */
+    .submit-area { text-align: center; margin-top: 44px; }
+    .submit-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent); color: #fff;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 18px 48px; border: none; border-radius: 999px;
+      cursor: pointer; transition: all .2s;
+      box-shadow: 0 4px 24px rgba(15,107,92,.3);
+    }
+    .submit-btn:hover { background: #0a5548; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(15,107,92,.4); }
+    .submit-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+    /* Results */
+    #results { display: none; }
+    .result-hero {
+      background: linear-gradient(135deg, #0a4a3d, #0f6b5c);
+      color: #fff; border-radius: var(--radius);
+      padding: 40px 32px; text-align: center; margin-bottom: 20px;
+    }
+    .result-avg { font-size: 3.5rem; font-weight: 700; font-family: 'Fraunces', serif; margin: 12px 0 4px; }
+    .result-avg span { font-size: 1.2rem; opacity: .7; }
+    .result-hero h2 { font-family: 'Fraunces', serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .result-hero p { opacity: .8; font-size: 14px; line-height: 1.65; }
+
+    .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .res-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+    .res-card .sec { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+    .res-card .val { font-size: 22px; font-weight: 700; color: var(--accent); }
+    .res-card .val em { font-size: 13px; font-weight: 400; color: var(--muted); font-style: normal; }
+    .res-card .val.text-val { font-size: 14px; line-height: 1.4; }
+
+    .open-result { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+    .open-result h4 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 8px; }
+    .open-result p { font-size: 14px; line-height: 1.65; color: var(--ink); }
+
+    .action-row { display: flex; gap: 10px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1.5px solid var(--border); background: var(--card); color: var(--ink);
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 13px 24px; border-radius: 999px; cursor: pointer; transition: all .2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 520px) {
+      .hero { padding: 40px 20px 36px; }
+      .results-grid { grid-template-columns: 1fr; }
+      .scale-btn { font-size: 12px; border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="anon-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Volledig anoniem
+    </div>
+    <h1>Evaluatie <em>Penny</em><br>Herstel Toeslagen</h1>
+    <p>Jouw ervaringen helpen Penny beter te maken voor jou en je collega's. Er worden geen naam, e-mail of persoonsgegevens opgeslagen.</p>
+    <div class="optional-note">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+      Alle vragen zijn optioneel — vul in wat voor jou van toepassing is
+    </div>
+  </div>
+</div>
+
+<div class="container" id="surveyForm">
+
+  <!-- ══ 1. GEBRUIKSGEMAK ══ -->
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Gebruiksgemak</div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.04s" id="card_q1">
+    <div class="q-label">Vraag 1 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe gebruiksvriendelijk vind je Penny?</div>
+    <div class="scale-btns" id="s_q1"></div>
+    <div class="scale-labels"><span>😟 Erg lastig</span><span>⭐ Heel makkelijk</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.08s" id="card_q2">
+    <div class="q-label">Vraag 2 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre is het voor jou duidelijk wat je moet vragen om een goed resultaat te krijgen?</div>
+    <div class="scale-btns" id="s_q2"></div>
+    <div class="scale-labels"><span>😟 Totaal niet</span><span>⭐ Heel duidelijk</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.12s" id="card_q3">
+    <div class="q-label">Vraag 3 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe intuïtief vind je de werkwijze en interface van Penny?</div>
+    <div class="scale-btns" id="s_q3"></div>
+    <div class="scale-labels"><span>😟 Verwarrend</span><span>⭐ Heel intuïtief</span></div>
+  </div>
+
+  <!-- ══ 2. KWALITEIT ══ -->
+  <div class="section-header" style="margin-top:48px">
+    <div class="section-num">2</div>
+    <div class="section-title">Kwaliteit</div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.16s" id="card_q4">
+    <div class="q-label">Vraag 4 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe beoordeel je de inhoudelijke kwaliteit van de gegenereerde adviezen?</div>
+    <div class="scale-btns" id="s_q4"></div>
+    <div class="scale-labels"><span>😟 Onvoldoende</span><span>⭐ Uitstekend</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.20s" id="card_q5">
+    <div class="q-label">Vraag 5 · Meerkeuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre sloot de toon en formulering aan bij de praktijk van het buurtteam?</div>
+    <div class="mc-list" id="mc_q5">
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Te formeel – zakelijk, weinig warmte</button>
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Goed passend – professioneel én toegankelijk</button>
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Te informeel – niet passend bij de ernst van de situatie</button>
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Wisselt sterk per vraag</button>
+    </div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.24s" id="card_q6">
+    <div class="q-label">Vraag 6 · Meerkeuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Had je het gevoel dat je de output van Penny zonder grote aanpassingen kon gebruiken?</div>
+    <div class="mc-list" id="mc_q6">
+      <button class="mc-option" onclick="selectMC('mc_q6', this, 'card_q6')"><span class="mc-dot"></span>Ja, direct bruikbaar</button>
+      <button class="mc-option" onclick="selectMC('mc_q6', this, 'card_q6')"><span class="mc-dot"></span>Soms – kleine aanpassingen nodig</button>
+      <button class="mc-option" onclick="selectMC('mc_q6', this, 'card_q6')"><span class="mc-dot"></span>Nee – ik paste de output altijd aan</button>
+    </div>
+  </div>
+
+  <!-- ══ 3. TOEGEVOEGDE WAARDE ══ -->
+  <div class="section-header" style="margin-top:48px">
+    <div class="section-num">3</div>
+    <div class="section-title">Toegevoegde waarde</div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.28s" id="card_q7">
+    <div class="q-label">Vraag 7 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre helpt Penny jou om tijd te besparen in je werk?</div>
+    <div class="scale-btns" id="s_q7"></div>
+    <div class="scale-labels"><span>😟 Geen besparing</span><span>⭐ Veel tijdwinst</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.32s" id="card_q8">
+    <div class="q-label">Vraag 8 · Keuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Zou je Penny willen blijven gebruiken in je dagelijkse werk?</div>
+    <div class="yn-row">
+      <button class="yn-btn" onclick="selectYN('yn_q8', this, 'card_q8')" id="yn_q8_Ja">Ja</button>
+      <button class="yn-btn" onclick="selectYN('yn_q8', this, 'card_q8')" id="yn_q8_Misschien">Misschien</button>
+      <button class="yn-btn" onclick="selectYN('yn_q8', this, 'card_q8')" id="yn_q8_Nee">Nee</button>
+    </div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.36s" id="card_q9">
+    <div class="q-label">Vraag 9 · Open <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Wat kan er volgens jou nog verbeterd worden aan Penny?</div>
+    <textarea class="open-area" id="open_q9" placeholder="Deel gerust je gedachten – elk idee helpt…" oninput="updateOpen('open_q9','cc_q9','card_q9')"></textarea>
+    <div class="char-count" id="cc_q9">0 tekens</div>
+  </div>
+
+  <div class="submit-area">
+    <button class="submit-btn" onclick="submitSurvey()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L19 7"/></svg>
+      Verstuur anoniem
+    </button>
+    <div class="submit-note">Je kunt ook versturen als je niet alle vragen hebt ingevuld.</div>
+  </div>
+
+</div>
+
+<!-- ══ RESULTATEN ══ -->
+<div id="results" class="container">
+  <div class="result-hero">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M5 12l5 5L19 7"/></svg>
+    <div class="result-avg" id="avgScore">–</div>
+    <h2>Dank voor je reactie!</h2>
+    <p>Je antwoorden zijn anoniem ontvangen en worden gebruikt om Penny te verbeteren.</p>
+  </div>
+  <div class="results-grid" id="resultGrid"></div>
+  <div id="openResultsWrap"></div>
+  <div class="action-row">
+    <button class="copy-btn" id="copyBtn" onclick="copyResults()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Kopieer samenvatting
+    </button>
+  </div>
+</div>
+
+<script>
+  const scaleAnswers = {};
+  const mcAnswers    = {};
+  const ynAnswers    = {};
+
+  // ── Build scale buttons ──
+  ['q1','q2','q3','q4','q7'].forEach(q => {
+    const el = document.getElementById('s_' + q);
+    for (let i = 1; i <= 10; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'scale-btn';
+      btn.textContent = i;
+      btn.type = 'button';
+      btn.onclick = () => {
+        el.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        scaleAnswers[q] = i;
+        markAnswered('card_' + q);
+      };
+      el.appendChild(btn);
+    }
+  });
+
+  // ── Multiple choice ──
+  function selectMC(groupId, clickedBtn, cardId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.mc-option').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    // Extract label text (skip the dot span)
+    mcAnswers[groupId] = clickedBtn.textContent.trim();
+    markAnswered(cardId);
+  }
+
+  // ── Yes/No ──
+  function selectYN(prefix, clickedBtn, cardId) {
+    clickedBtn.closest('.yn-row').querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    ynAnswers[prefix] = clickedBtn.textContent.trim();
+    markAnswered(cardId);
+  }
+
+  // ── Open text ──
+  function updateOpen(id, ccId, cardId) {
+    const val = document.getElementById(id).value;
+    document.getElementById(ccId).textContent = val.length + ' tekens';
+    if (val.trim().length > 0) markAnswered(cardId);
+  }
+
+  function markAnswered(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) card.classList.add('answered');
+  }
+
+  // ── Submit ──
+  function submitSurvey() {
+    document.getElementById('surveyForm').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const scaleLabels = {
+      q1: 'Gebruiksgemak',
+      q2: 'Duidelijkheid vragen',
+      q3: 'Intuïtiviteit',
+      q4: 'Inhoudelijke kwaliteit',
+      q7: 'Tijdsbesparing'
+    };
+
+    const mcLabels = {
+      mc_q5: 'Toon & formulering',
+      mc_q6: 'Bruikbaarheid output'
+    };
+
+    const ynLabels = {
+      yn_q8: 'Blijven gebruiken'
+    };
+
+    const grid = document.getElementById('resultGrid');
+    grid.innerHTML = '';
+
+    let total = 0, count = 0;
+
+    Object.entries(scaleAnswers).forEach(([q, v]) => {
+      total += v; count++;
+      const div = document.createElement('div');
+      div.className = 'res-card';
+      div.innerHTML = `<div class="sec">${scaleLabels[q] || q}</div><div class="val">${v}<em> / 10</em></div>`;
+      grid.appendChild(div);
+    });
+
+    Object.entries(mcAnswers).forEach(([k, v]) => {
+      const div = document.createElement('div');
+      div.className = 'res-card';
+      div.innerHTML = `<div class="sec">${mcLabels[k] || k}</div><div class="val text-val">${v}</div>`;
+      grid.appendChild(div);
+    });
+
+    Object.entries(ynAnswers).forEach(([k, v]) => {
+      const div = document.createElement('div');
+      div.className = 'res-card';
+      div.innerHTML = `<div class="sec">${ynLabels[k] || k}</div><div class="val text-val">${v}</div>`;
+      grid.appendChild(div);
+    });
+
+    const avgEl = document.getElementById('avgScore');
+    if (count > 0) {
+      avgEl.innerHTML = (total / count).toFixed(1) + '<span>/10</span>';
+    } else {
+      avgEl.innerHTML = '<span style="font-size:1rem;opacity:.7">Geen scores ingevuld</span>';
+    }
+
+    const openWrap = document.getElementById('openResultsWrap');
+    openWrap.innerHTML = '';
+    const openVal = document.getElementById('open_q9')?.value?.trim();
+    if (openVal) {
+      const div = document.createElement('div');
+      div.className = 'open-result';
+      div.innerHTML = `<h4>Verbeterpunten Penny</h4><p>${openVal}</p>`;
+      openWrap.appendChild(div);
+    }
+  }
+
+  // ── Copy ──
+  function copyResults() {
+    const lines = ['EVALUATIE PENNY – ' + new Date().toLocaleDateString('nl-NL'), ''];
+    const sL = { q1:'Gebruiksgemak', q2:'Duidelijkheid vragen', q3:'Intuïtiviteit', q4:'Inhoudelijke kwaliteit', q7:'Tijdsbesparing' };
+    const mL = { mc_q5:'Toon & formulering', mc_q6:'Bruikbaarheid output' };
+    const yL = { yn_q8:'Blijven gebruiken' };
+    Object.entries(scaleAnswers).forEach(([q,v]) => lines.push(`${sL[q]||q}: ${v}/10`));
+    Object.entries(mcAnswers).forEach(([k,v]) => lines.push(`${mL[k]||k}: ${v}`));
+    Object.entries(ynAnswers).forEach(([k,v]) => lines.push(`${yL[k]||k}: ${v}`));
+    const openVal = document.getElementById('open_q9')?.value?.trim();
+    if (openVal) lines.push(`\nVerbeterpunten:\n${openVal}`);
+
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Gekopieerd!';
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Kopieer samenvatting`;
+      }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
