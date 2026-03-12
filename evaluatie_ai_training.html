@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluatie AI-training</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f3f8;
+      --card: #ffffff;
+      --ink: #1a1825;
+      --muted: #6e6a82;
+      --light: #b0abbe;
+      --accent: #5b3fdb;
+      --accent-2: #ede9fd;
+      --accent-dark: #3d28a8;
+      --border: #e2dff0;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0 16px 100px;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #2d1a8a 0%, #5b3fdb 65%, #7c5ce8 100%);
+      color: #fff;
+      padding: 52px 32px 48px;
+      margin: 0 -16px 48px;
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='38' y='38' width='4' height='4' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+    }
+    .hero-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.9rem, 5vw, 2.9rem);
+      line-height: 1.15; font-weight: 700; margin-bottom: 12px;
+    }
+    .hero h1 em { font-style: italic; opacity: .8; }
+    .hero p { font-size: 15px; opacity: .75; line-height: 1.7; max-width: 480px; }
+    .hero-meta {
+      display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;
+    }
+    .hero-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      font-size: 12px; padding: 5px 12px; border-radius: 999px;
+    }
+
+    /* Container */
+    .container { max-width: 640px; margin: 0 auto; }
+
+    /* Section */
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin: 44px 0 18px;
+    }
+    .section-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-title { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; color: var(--ink); }
+    .section-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* Cards */
+    .q-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 26px 28px; margin-bottom: 12px;
+      opacity: 0; transform: translateY(10px); animation: fadeUp .4s forwards;
+      transition: border-color .25s;
+    }
+    .q-card.answered { border-color: #a89cf5; }
+    @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+    .q-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 9px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .opt-tag {
+      font-size: 10px; font-weight: 500; letter-spacing: .03em;
+      color: var(--light); text-transform: none;
+      background: var(--bg); padding: 2px 7px;
+      border-radius: 999px; border: 1px solid var(--border);
+    }
+    .q-text { font-size: 15.5px; font-weight: 500; line-height: 1.55; color: var(--ink); margin-bottom: 20px; }
+
+    /* Scale 1–10 */
+    .scale-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+    .scale-btn {
+      flex: 1; min-width: 32px; aspect-ratio: 1;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      background: transparent; color: var(--ink);
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .14s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scale-btn:hover { border-color: var(--accent); background: var(--accent-2); color: var(--accent); }
+    .scale-btn.selected {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+      transform: scale(1.1); box-shadow: 0 4px 14px rgba(91,63,219,.3);
+    }
+    .scale-labels { display: flex; justify-content: space-between; margin-top: 9px; font-size: 11px; color: var(--light); }
+
+    /* Multiple choice */
+    .mc-list { display: flex; flex-direction: column; gap: 8px; }
+    .mc-option {
+      display: flex; align-items: flex-start; gap: 12px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 12px 16px; cursor: pointer; transition: all .14s;
+      background: transparent; font-family: 'Inter', sans-serif;
+      font-size: 14px; color: var(--ink); text-align: left; line-height: 1.45; width: 100%;
+    }
+    .mc-option:hover { border-color: var(--accent); background: var(--accent-2); }
+    .mc-option.selected { border-color: var(--accent); background: var(--accent-2); font-weight: 500; color: var(--accent); }
+    .mc-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center; transition: all .14s;
+    }
+    .mc-option.selected .mc-dot { border-color: var(--accent); background: var(--accent); }
+    .mc-option.selected .mc-dot::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+
+    /* Ja/Nee */
+    .yn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .yn-btn {
+      flex: 1; min-width: 90px; padding: 12px 10px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      background: transparent; font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all .14s; color: var(--ink); text-align: center;
+    }
+    .yn-btn:hover { border-color: var(--accent); background: var(--accent-2); color: var(--accent); }
+    .yn-btn.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+    /* Open */
+    .open-area {
+      width: 100%; min-height: 100px; border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 13px 16px; resize: vertical;
+      font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6;
+      color: var(--ink); background: transparent; outline: none; transition: border-color .2s;
+    }
+    .open-area:focus { border-color: var(--accent); }
+    .open-area::placeholder { color: var(--light); }
+    .char-count { text-align: right; font-size: 11px; color: var(--light); margin-top: 5px; }
+
+    /* Eindcijfer — groot */
+    .final-scale .scale-btns { gap: 6px; }
+    .final-scale .scale-btn {
+      font-size: 17px; font-weight: 700; border-radius: 12px; border-width: 2px;
+    }
+    .final-scale .scale-btn.selected { transform: scale(1.12); box-shadow: 0 6px 20px rgba(91,63,219,.35); }
+
+    /* Submit */
+    .submit-area { text-align: center; margin-top: 44px; }
+    .submit-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent); color: #fff;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 18px 50px; border: none; border-radius: 999px;
+      cursor: pointer; transition: all .2s;
+      box-shadow: 0 4px 24px rgba(91,63,219,.35);
+    }
+    .submit-btn:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 7px 28px rgba(91,63,219,.45); }
+    .submit-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+    /* Results */
+    #results { display: none; }
+    .result-hero {
+      background: linear-gradient(135deg, #2d1a8a, #5b3fdb);
+      color: #fff; border-radius: var(--radius);
+      padding: 44px 32px; text-align: center; margin-bottom: 20px;
+    }
+    .result-hero svg { margin-bottom: 12px; }
+    .result-grade {
+      font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 700; line-height: 1;
+      margin: 8px 0;
+    }
+    .result-grade span { font-size: 1.5rem; opacity: .6; }
+    .result-hero h2 { font-family: 'Fraunces', serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .result-hero p { opacity: .75; font-size: 14px; line-height: 1.65; }
+
+    .section-result { margin-bottom: 16px; }
+    .section-result-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 4px; margin-bottom: 10px;
+    }
+    .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .res-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .res-card .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 6px; }
+    .res-card .val { font-size: 22px; font-weight: 700; color: var(--accent); }
+    .res-card .val em { font-size: 12px; font-weight: 400; color: var(--muted); font-style: normal; }
+    .res-card .val.text-val { font-size: 14px; line-height: 1.4; }
+
+    .open-result { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 10px; }
+    .open-result h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    .open-result p { font-size: 14px; line-height: 1.65; }
+
+    .action-row { display: flex; gap: 10px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1.5px solid var(--border); background: var(--card); color: var(--ink);
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 13px 24px; border-radius: 999px; cursor: pointer; transition: all .2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 520px) {
+      .hero { padding: 40px 20px 36px; }
+      .res-grid { grid-template-columns: 1fr; }
+      .scale-btn { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Anonieme evaluatie
+    </div>
+    <h1>Evaluatie<br><em>AI-training</em></h1>
+    <p>Jouw feedback helpt ons de training te verbeteren. Er worden geen naam, e-mailadres of andere persoonsgegevens opgeslagen.</p>
+    <div class="hero-meta">
+      <div class="hero-chip">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        ~5 minuten
+      </div>
+      <div class="hero-chip">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Alle vragen zijn optioneel
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="surveyForm">
+
+  <!-- ══ 1. ALGEMENE INDRUK ══ -->
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div>
+      <div class="section-title">Algemene indruk</div>
+    </div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.03s" id="card_q1">
+    <div class="q-label">Vraag 1 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe duidelijk vond je de uitleg in de training?</div>
+    <div class="scale-btns" id="s_q1"></div>
+    <div class="scale-labels"><span>😟 Onduidelijk</span><span>⭐ Heel duidelijk</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.06s" id="card_q2">
+    <div class="q-label">Vraag 2 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe logisch vond je de opbouw van de training?</div>
+    <div class="scale-btns" id="s_q2"></div>
+    <div class="scale-labels"><span>😟 Geen logica</span><span>⭐ Heel logisch</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.09s" id="card_q3">
+    <div class="q-label">Vraag 3 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe relevant is de inhoud van de training voor jouw werk?</div>
+    <div class="scale-btns" id="s_q3"></div>
+    <div class="scale-labels"><span>😟 Niet relevant</span><span>⭐ Heel relevant</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.12s" id="card_q4">
+    <div class="q-label">Vraag 4 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe interessant vond je de training om te volgen?</div>
+    <div class="scale-btns" id="s_q4"></div>
+    <div class="scale-labels"><span>😟 Saai</span><span>⭐ Boeiend</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.15s" id="card_q5">
+    <div class="q-label">Vraag 5 · Meerkeuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Hoe beoordeel je de lengte van de training?</div>
+    <div class="mc-list" id="mc_q5">
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Te kort – ik had meer diepgang gewild</button>
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Precies goed</button>
+      <button class="mc-option" onclick="selectMC('mc_q5', this, 'card_q5')"><span class="mc-dot"></span>Te lang – sommige onderdelen hadden korter gekund</button>
+    </div>
+  </div>
+
+  <!-- ══ 2. BEGRIP & TOEPASBAARHEID ══ -->
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Begrip en toepasbaarheid</div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.18s" id="card_q6">
+    <div class="q-label">Vraag 6 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre begrijp je nu beter wat AI is en hoe het werkt?</div>
+    <div class="scale-btns" id="s_q6"></div>
+    <div class="scale-labels"><span>😟 Geen verschil</span><span>⭐ Veel beter</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.21s" id="card_q7">
+    <div class="q-label">Vraag 7 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre begrijp je nu beter wanneer je AI wel of niet moet gebruiken?</div>
+    <div class="scale-btns" id="s_q7"></div>
+    <div class="scale-labels"><span>😟 Geen verschil</span><span>⭐ Heel duidelijk</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.24s" id="card_q8">
+    <div class="q-label">Vraag 8 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre begrijp je de risico's en beperkingen van AI?</div>
+    <div class="scale-btns" id="s_q8"></div>
+    <div class="scale-labels"><span>😟 Nog onduidelijk</span><span>⭐ Heel goed</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.27s" id="card_q9">
+    <div class="q-label">Vraag 9 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">In hoeverre kun je wat je hebt geleerd toepassen in je werk?</div>
+    <div class="scale-btns" id="s_q9"></div>
+    <div class="scale-labels"><span>😟 Niet toepasbaar</span><span>⭐ Direct toepasbaar</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.30s" id="card_q10">
+    <div class="q-label">Vraag 10 · Keuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Waren de voorbeelden in de training herkenbaar voor jouw werk?</div>
+    <div class="yn-row">
+      <button class="yn-btn" onclick="selectYN('yn_q10', this, 'card_q10')">Ja, goed herkenbaar</button>
+      <button class="yn-btn" onclick="selectYN('yn_q10', this, 'card_q10')">Deels</button>
+      <button class="yn-btn" onclick="selectYN('yn_q10', this, 'card_q10')">Nee, niet herkenbaar</button>
+    </div>
+  </div>
+
+  <!-- ══ 3. BEGRIJPELIJKHEID ══ -->
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Begrijpelijkheid van de inhoud</div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.33s" id="card_q11">
+    <div class="q-label">Vraag 11 · Keuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Waren er onderdelen van de training die onduidelijk waren?</div>
+    <div class="yn-row">
+      <button class="yn-btn" onclick="selectYN('yn_q11', this, 'card_q11')">Ja</button>
+      <button class="yn-btn" onclick="selectYN('yn_q11', this, 'card_q11')">Een enkel onderdeel</button>
+      <button class="yn-btn" onclick="selectYN('yn_q11', this, 'card_q11')">Nee, alles was duidelijk</button>
+    </div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.36s" id="card_q12">
+    <div class="q-label">Vraag 12 · Schaal <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Was het taalgebruik in de training begrijpelijk?</div>
+    <div class="scale-btns" id="s_q12"></div>
+    <div class="scale-labels"><span>😟 Moeilijk te volgen</span><span>⭐ Heel begrijpelijk</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.39s" id="card_q13">
+    <div class="q-label">Vraag 13 · Keuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Waren er stukken tekst die te ingewikkeld of te technisch waren?</div>
+    <div class="yn-row">
+      <button class="yn-btn" onclick="selectYN('yn_q13', this, 'card_q13')">Ja, regelmatig</button>
+      <button class="yn-btn" onclick="selectYN('yn_q13', this, 'card_q13')">Soms</button>
+      <button class="yn-btn" onclick="selectYN('yn_q13', this, 'card_q13')">Nee, prima te volgen</button>
+    </div>
+  </div>
+
+  <!-- ══ 4. EINDBEOORDELING ══ -->
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">Eindbeoordeling</div>
+  </div>
+
+  <div class="q-card final-scale" style="animation-delay:.42s" id="card_q14">
+    <div class="q-label">Vraag 14 · Eindcijfer <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Welk cijfer geef je deze training?</div>
+    <div class="scale-btns" id="s_q14"></div>
+    <div class="scale-labels"><span>😟 Onvoldoende</span><span>⭐ Uitstekend</span></div>
+  </div>
+
+  <div class="q-card" style="animation-delay:.45s" id="card_q15">
+    <div class="q-label">Vraag 15 · Keuze <span class="opt-tag">optioneel</span></div>
+    <div class="q-text">Zou je deze training aanbevelen aan collega's?</div>
+    <div class="yn-row">
+      <button class="yn-btn" onclick="selectYN('yn_q15', this, 'card_q15')">Ja, zeker</button>
+      <button class="yn-btn" onclick="selectYN('yn_q15', this, 'card_q15')">Misschien</button>
+      <button class="yn-btn" onclick="selectYN('yn_q15', this, 'card_q15')">Nee</button>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="submit-btn" onclick="submitSurvey()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L19 7"/></svg>
+      Verstuur evaluatie
+    </button>
+    <div class="submit-note">Alle vragen zijn optioneel — vul in wat voor jou van toepassing is.</div>
+  </div>
+
+</div>
+
+<!-- ══ RESULTATEN ══ -->
+<div id="results" class="container">
+  <div class="result-hero">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M5 12l5 5L19 7"/></svg>
+    <div class="result-grade" id="finalGrade">–</div>
+    <h2>Dank voor je evaluatie!</h2>
+    <p>Je antwoorden zijn anoniem ontvangen. Hieronder zie je een overzicht van jouw scores.</p>
+  </div>
+
+  <div id="resultSections"></div>
+
+  <div class="action-row">
+    <button class="copy-btn" id="copyBtn" onclick="copyResults()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Kopieer samenvatting
+    </button>
+  </div>
+</div>
+
+<script>
+  const scaleAnswers = {};
+  const mcAnswers    = {};
+  const ynAnswers    = {};
+
+  // Build scale buttons
+  const scaleQs = ['q1','q2','q3','q4','q6','q7','q8','q9','q12','q14'];
+  scaleQs.forEach(q => {
+    const el = document.getElementById('s_' + q);
+    if (!el) return;
+    for (let i = 1; i <= 10; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'scale-btn';
+      btn.textContent = i;
+      btn.type = 'button';
+      btn.onclick = () => {
+        el.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        scaleAnswers[q] = i;
+        markAnswered('card_' + q);
+      };
+      el.appendChild(btn);
+    }
+  });
+
+  function selectMC(groupId, clickedBtn, cardId) {
+    document.getElementById(groupId).querySelectorAll('.mc-option').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    mcAnswers[groupId] = clickedBtn.textContent.trim();
+    markAnswered(cardId);
+  }
+
+  function selectYN(prefix, clickedBtn, cardId) {
+    clickedBtn.closest('.yn-row').querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    ynAnswers[prefix] = clickedBtn.textContent.trim();
+    markAnswered(cardId);
+  }
+
+  function markAnswered(cardId) {
+    const c = document.getElementById(cardId);
+    if (c) c.classList.add('answered');
+  }
+
+  // ── Submit ──
+  function submitSurvey() {
+    document.getElementById('surveyForm').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Final grade display
+    const grade = scaleAnswers['q14'];
+    document.getElementById('finalGrade').innerHTML = grade
+      ? grade + '<span>/10</span>'
+      : '<span style="font-size:1rem;opacity:.6">Geen cijfer ingevuld</span>';
+
+    const sections = [
+      {
+        title: 'Algemene indruk',
+        items: [
+          { key: 'q1',    label: 'Duidelijkheid uitleg',  type: 'scale' },
+          { key: 'q2',    label: 'Logische opbouw',        type: 'scale' },
+          { key: 'q3',    label: 'Relevantie voor werk',   type: 'scale' },
+          { key: 'q4',    label: 'Interessantheid',        type: 'scale' },
+          { key: 'mc_q5', label: 'Lengte training',        type: 'mc'    },
+        ]
+      },
+      {
+        title: 'Begrip & toepasbaarheid',
+        items: [
+          { key: 'q6',     label: 'Begrip wat AI is',      type: 'scale' },
+          { key: 'q7',     label: 'Wanneer AI gebruiken',  type: 'scale' },
+          { key: 'q8',     label: 'Risico\'s & beperkingen', type: 'scale' },
+          { key: 'q9',     label: 'Toepasbaarheid',        type: 'scale' },
+          { key: 'yn_q10', label: 'Herkenbare voorbeelden', type: 'yn'   },
+        ]
+      },
+      {
+        title: 'Begrijpelijkheid',
+        items: [
+          { key: 'yn_q11', label: 'Onduidelijke onderdelen', type: 'yn' },
+          { key: 'q12',    label: 'Taalgebruik',             type: 'scale' },
+          { key: 'yn_q13', label: 'Te technisch/ingewikkeld', type: 'yn' },
+        ]
+      },
+      {
+        title: 'Eindbeoordeling',
+        items: [
+          { key: 'q14',    label: 'Eindcijfer training',    type: 'scale' },
+          { key: 'yn_q15', label: 'Aanbeveling collega\'s', type: 'yn'   },
+        ]
+      }
+    ];
+
+    const wrap = document.getElementById('resultSections');
+    wrap.innerHTML = '';
+
+    sections.forEach(sec => {
+      const answered = sec.items.filter(it => {
+        if (it.type === 'scale') return scaleAnswers[it.key] !== undefined;
+        if (it.type === 'mc')    return mcAnswers[it.key] !== undefined;
+        if (it.type === 'yn')    return ynAnswers[it.key] !== undefined;
+        return false;
+      });
+      if (!answered.length) return;
+
+      const secDiv = document.createElement('div');
+      secDiv.className = 'section-result';
+      secDiv.innerHTML = `<div class="section-result-title">${sec.title}</div>`;
+      const grid = document.createElement('div');
+      grid.className = 'res-grid';
+
+      answered.forEach(it => {
+        let val = '';
+        if (it.type === 'scale') val = `<div class="val">${scaleAnswers[it.key]}<em> / 10</em></div>`;
+        if (it.type === 'mc')    val = `<div class="val text-val">${mcAnswers[it.key]}</div>`;
+        if (it.type === 'yn')    val = `<div class="val text-val">${ynAnswers[it.key]}</div>`;
+        const card = document.createElement('div');
+        card.className = 'res-card';
+        card.innerHTML = `<div class="lbl">${it.label}</div>${val}`;
+        grid.appendChild(card);
+      });
+
+      secDiv.appendChild(grid);
+      wrap.appendChild(secDiv);
+    });
+  }
+
+  // ── Copy ──
+  function copyResults() {
+    const lines = ['EVALUATIE AI-TRAINING – ' + new Date().toLocaleDateString('nl-NL'), ''];
+    const add = (label, val) => lines.push(`${label}: ${val}`);
+
+    if (scaleAnswers.q1)  add('Duidelijkheid uitleg', scaleAnswers.q1 + '/10');
+    if (scaleAnswers.q2)  add('Logische opbouw', scaleAnswers.q2 + '/10');
+    if (scaleAnswers.q3)  add('Relevantie', scaleAnswers.q3 + '/10');
+    if (scaleAnswers.q4)  add('Interessantheid', scaleAnswers.q4 + '/10');
+    if (mcAnswers.mc_q5)  add('Lengte training', mcAnswers.mc_q5);
+    lines.push('');
+    if (scaleAnswers.q6)  add('Begrip wat AI is', scaleAnswers.q6 + '/10');
+    if (scaleAnswers.q7)  add('Wanneer AI gebruiken', scaleAnswers.q7 + '/10');
+    if (scaleAnswers.q8)  add("Risico's & beperkingen", scaleAnswers.q8 + '/10');
+    if (scaleAnswers.q9)  add('Toepasbaarheid', scaleAnswers.q9 + '/10');
+    if (ynAnswers.yn_q10) add('Herkenbare voorbeelden', ynAnswers.yn_q10);
+    lines.push('');
+    if (ynAnswers.yn_q11) add('Onduidelijke onderdelen', ynAnswers.yn_q11);
+    if (scaleAnswers.q12) add('Taalgebruik', scaleAnswers.q12 + '/10');
+    if (ynAnswers.yn_q13) add('Te technisch', ynAnswers.yn_q13);
+    lines.push('');
+    if (scaleAnswers.q14) add('EINDCIJFER', scaleAnswers.q14 + '/10');
+    if (ynAnswers.yn_q15) add('Aanbeveling collega\'s', ynAnswers.yn_q15);
+
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Gekopieerd!';
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Kopieer samenvatting`;
+      }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
